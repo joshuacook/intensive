@@ -1,0 +1,11 @@
+**/.DS_Store
+doc
+**/.cache
+**/.config
+**/.ipy*
+**/.jupyter
+**/.local
+src/ipynb/planning
+**/Untitled.ipynb
+**/*.do.txt
+**/__pycache__
