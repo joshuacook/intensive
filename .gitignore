@@ -2,6 +2,7 @@
 doc
 **/.cache
 **/.config
+**/.conda
 **/.ipy*
 **/.jupyter
 **/.local
