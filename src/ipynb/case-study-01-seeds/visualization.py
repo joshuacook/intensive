@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LogisticRegression
 
 def scatter_plot_by_class(ax, features, target, feat_1='Component_1', feat_2='Component_2'):
     species = ['Kama', 'Rosa', 'Canadian']
