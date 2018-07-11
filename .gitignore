@@ -7,6 +7,6 @@ doc
 **/.jupyter
 **/.local
 src/ipynb/planning
-**/Untitled.ipynb
+**/Untitled*
 **/*.do.txt
 **/__pycache__
