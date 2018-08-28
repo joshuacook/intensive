@@ -1,0 +1,15 @@
+version: '3'
+services:
+    this_jupyter:
+        build: docker/jupyter
+        ports:
+            - 80:8888
+        volumes:
+            - .:/home/jovyan
+        command: start-notebook.sh --NotebookApp.token=""
+    this_postgis:
+        build: docker/postgis
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+volumes:
+    postgres_data:

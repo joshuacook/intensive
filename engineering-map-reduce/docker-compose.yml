@@ -1,0 +1,31 @@
+  version: '3'
+services:
+    this_jupyter:
+        build: docker/jupyter
+        ports:
+            - "80:8888"
+        volumes:
+            - .:/home/jovyan
+    this_redis:
+       image: redis
+       volumes:
+           - redis_data:/data
+    this_mongo:
+        image: mongo
+        volumes:
+            - mongo_data:/data/db
+    this_worker:
+        build: docker/jupyter
+        volumes:
+            - .:/home/jovyan
+        entrypoint: ["tini","--","rqworker","-u","redis://this_redis:6379"]
+    this_monitor:
+        build: docker/jupyter
+        volumes:
+            - .:/home/jovyan
+        ports:
+            - "443:5000"
+        entrypoint: ["tini","--","rq-dashboard","-H","this_redis", "-p", "5000"]
+volumes:
+    redis_data:
+    mongo_data:
