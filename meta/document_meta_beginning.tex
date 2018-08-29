@@ -4,19 +4,30 @@
 \graphicspath{{img/}}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{float}
+
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
 \usepackage{listings}
 \lstdefinestyle{mystyle}{
     basicstyle=\ttfamily\footnotesize,
-    breakatwhitespace=false,
+    breakatwhitespace=true,
     breaklines=true,
-    captionpos=b,
     keepspaces=true,
     showspaces=false,
     showstringspaces=false,
     showtabs=false,
     tabsize=4,
+    % upquote=true, need to get this working
     frame=single,
-    aboveskip=2em
+    aboveskip=2em,
+    postbreak=\space\space\space\space\space\space
 }\lstset{style=mystyle}
 
 \setcounter{tocdepth}{1}

@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 
 from lib.cells import (bold, code, enumerate_list, footnotes,
                        header, image, inline_code, itemize,
-                       italics, listing, pound_symbol)
+                       italics, listing, math, pound_symbol)
 LINE_BREAK = '\n'
 
 def get_cells(notebook_file):
@@ -45,6 +45,16 @@ def get_cell_outputs(outputs):
             return ''.join(outputs[0]['text'])
         if 'image/png' in data.keys():
             return ('img', data['image/png'].encode())
+        elif 'text/html' in data.keys():
+            text = '\n'.join(data['text/html'])
+            try:
+                df = pd.read_html(text)[0]
+                r = re.compile(r"Unnamed: \d+")
+                latex = df.to_latex(index=False)
+                outputs = ('table', r.sub(' ', latex))
+            except:
+                outputs = ''.join(data['text/plain'])
+            return outputs
         else:
             if data == {}:
                 return None
@@ -102,6 +112,7 @@ def parse_markdown(markdown_cell_text):
     markdown_cell_text = pound_symbol(markdown_cell_text)
     markdown_cell_text = itemize(markdown_cell_text)
     markdown_cell_text = enumerate_list(markdown_cell_text)
+    markdown_cell_text = math(markdown_cell_text)
     return "\paragraph{}\n" + markdown_cell_text
 
 def parse_notebook(notebook_file):

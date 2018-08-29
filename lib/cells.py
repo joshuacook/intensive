@@ -20,15 +20,29 @@ def code(markdown_cell_text, outputs, execution_count):
              .replace('\\','')
              .lower())
 
+    caption = inline_code(caption)
+    caption = pound_symbol(caption)
+
     if type(outputs) == tuple:
-        output_image = outputs[1]
-        outputs = None
-        with open(f"img/{label}.png", "wb") as fh:
-            fh.write(base64.decodebytes(output_image))
+        if outputs[0] == 'img':
+            output_image = outputs[1]
+            output_table = None
+            outputs = None
+            with open(f"img/{label}.png", "wb") as fh:
+                fh.write(base64.decodebytes(output_image))
+        elif outputs[0] == 'table':
+            output_image = None
+            output_table = outputs[1]
+            output_table = ("\\begin {table}[H]" +
+                            f"\\caption{{{caption}}}" +
+                            f"\\label{{tab:{label}}}" +
+                            "\\begin{center}") + output_table
+            output_table += "\\end{center}\\end {table}"
+            outputs = None
+
     else:
         output_image = None
-
-    caption = inline_code(caption)
+        output_table = None
     markdown_cell_text = re.sub(r"###### .+\n\n","",markdown_cell_text)
     markdown_cell_text = (markdown_cell_text
                           .replace("\n", "\n          "))
@@ -53,6 +67,8 @@ def code(markdown_cell_text, outputs, execution_count):
 
     if output_image:
         text += image(label, caption)
+    if output_table:
+        text += LINE_BREAK + output_table
     return text
 
 def enumerate_list(markdown_cell_text):
@@ -62,7 +78,7 @@ def enumerate_list(markdown_cell_text):
         regex_item = re.compile(r"\d\. (.+)")
 
         markdown_cell_text = regex_begin_list.sub(
-            '\n\\\\begin{enumerate}\n1. ', markdown_cell_text
+            '\\\\begin{enumerate}\n1. ', markdown_cell_text
         )
         markdown_cell_text = regex_end_list.sub(
             '\n\\1\n\\\\end{enumerate}', markdown_cell_text
@@ -89,6 +105,7 @@ def footnotes(markdown_cell_text):
         markdown_cell_text = regex.sub(f"\\\\footnote{{{note}}}", markdown_cell_text)
         regex = re.compile(f"{tag}: {note}")
         markdown_cell_text = regex.sub("", markdown_cell_text)
+        # markdown_cell_text = markdown_cell_text.replace("_", "\\_")
 
     return markdown_cell_text
 
@@ -100,12 +117,13 @@ def header(cell_type, markdown_cell_text):
     label = (title
              .replace('`','')
              .replace('$', '')
+             .replace('%', '')
              .replace(',', '')
              .replace('?', '')
              .replace(' ','_')
              .replace('\\','')
              .lower())
-    title = title.replace('?', '\?')
+    title = pound_symbol(title)
 
     if cell_type == 'chapter':
         processed_text = f"\chapter{{{title}}}\label{{ch:{label}}}"
@@ -125,7 +143,7 @@ def image(url, caption):
         caption = italics(caption)
         caption = pound_symbol(caption)
     text = "\\begin{figure}"
-    text += f"[htbp]\\includegraphics[width=\\linewidth]{{{url}}}"
+    text += f"[H]\\includegraphics[width=\\linewidth]{{{url}}}"
     text += f"\\caption{{{caption}}}\label{{fig:{url}}}"
     text += "\\end{figure}"
     return text
@@ -141,7 +159,7 @@ def itemize(markdown_cell_text):
         regex_item = re.compile(r"- (.+)")
 
         markdown_cell_text = regex_begin_list.sub(
-            '\n\\\\begin{itemize}\n- ', markdown_cell_text
+            '\\\\begin{itemize}\n- ', markdown_cell_text
         )
         markdown_cell_text = regex_end_list.sub(
             '\n\\1\n\\\\end{itemize}', markdown_cell_text
@@ -154,18 +172,18 @@ def itemize(markdown_cell_text):
     return markdown_cell_text
 
 def inline_code(markdown_cell_text):
+    # markdown_cell_text = markdown_cell_text.replace('%', "\\%")
 
     regex = re.compile(r"`(.+?)`")
     match = regex.search(markdown_cell_text)
     if match:
-        for match in regex.findall(markdown_cell_text):
-            substring = match.replace('_', '\\_')
-            markdown_cell_text = markdown_cell_text.replace(match, substring)
         markdown_cell_text = regex.sub("\\\\texttt{\\1}", markdown_cell_text)
     return markdown_cell_text
 
 def listing(label, caption, markdown_cell_text):
     caption = inline_code(caption)
+    caption = pound_symbol(caption)
+
     markdown_cell_text = re.sub(r"<include.+\n","",markdown_cell_text)
     markdown_cell_text = re.sub(r"###### .+\n","",markdown_cell_text)
     regex = re.compile(r"```\n(.+)```", re.S)
@@ -183,8 +201,19 @@ def listing(label, caption, markdown_cell_text):
     text += "\\end{minipage}"
     return text
 
+def math(markdown_cell_text):
+    math = re.compile(r"\$.+?\$")
+    matches = math.findall(markdown_cell_text)
+    for match in matches:
+        markdown_cell_text = (markdown_cell_text
+                              .replace(match, match.replace('\\_','_')))
+    return markdown_cell_text
+
 def pound_symbol(markdown_cell_text):
     return (markdown_cell_text
             .replace('#', '\#')
+            .replace('_', '\_')
             .replace('’', "'")
-            .replace('‘', "'"))
+            .replace('‘', "'")
+            .replace('%', "\%")
+            .replace('\\s', "\\\\s"))

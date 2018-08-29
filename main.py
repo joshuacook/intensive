@@ -12,6 +12,9 @@ from lib.parse import (LINE_BREAK,
                        parse_book_data_cell,
                        parse_notebook)
 
+for f in glob.glob("final.*"):
+    os.remove(f)
+
 with open('meta/document_meta_beginning.tex', 'r') as f:
     meta_beginning = ''.join(f.readlines())
 with open('meta/document_meta_end.tex', 'r') as f:
@@ -36,8 +39,4 @@ subprocess.call(['pdflatex', 'final.tex'])
 subprocess.call(['pdflatex', 'final.tex'])
 subprocess.call(['pdflatex', 'final.tex'])
 
-os.rename('final.pdf', 'tmp.pdf')
-
-for f in glob.glob("final.*"):
-    os.remove(f)
-os.rename('tmp.pdf', 'Intensive.pdf')
+os.rename('final.pdf', 'Intensive.pdf')
