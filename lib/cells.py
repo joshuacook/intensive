@@ -9,7 +9,10 @@ def bold(markdown_cell_text):
 
 def code(markdown_cell_text, outputs, execution_count):
 
-    execution_count = int(execution_count)
+    try:
+        execution_count = int(execution_count)
+    except:
+        import pdb; pdb.set_trace()
     caption = re.search(r"###### (.+?)\n", markdown_cell_text).groups()[0]
     label = (caption
              .replace('`','')

@@ -3,6 +3,7 @@ import numpy as np
 import codecs
 import json
 import re
+import requests
 import xml.etree.ElementTree as ET
 
 from lib.cells import (bold, code, enumerate_list, footnotes,
@@ -63,20 +64,32 @@ def get_cell_outputs(outputs):
     else:
         return None
 
+def get_image(url, name, d='../img/'):
+    f = open(d+name,'wb')
+    f.write(requests.get(url).content)
+    f.close()
+
 def get_metadata(markdown_cell_text):
     caption_regex = re.compile('.+###### (.+?)\n', re.S)
     caption   = caption_regex.match(markdown_cell_text)
     label     = re.match('.+ label="(.+?)"', markdown_cell_text)
-    url       = re.match('.+ url="(.+?)"', markdown_cell_text)
 
     if caption:     caption = caption.groups()[0]
     if label:         label = label.groups()[0]
-    if url:             url = url.groups()[0]
 
     try:
         cell_type = get_cell_type(markdown_cell_text)
     except IndexError:
         import pdb; pdb.set_trace()
+
+    if cell_type == 'notebook':
+        r = re.compile('href="(.+?)"', re.S)
+        url = r.search(markdown_cell_text).groups()[0]
+    elif cell_type == 'image':
+        r = re.compile('img/(.+?)\)', re.S)
+        url = r.search(markdown_cell_text).groups()[0]
+    else:
+        url = None
 
     return caption, cell_type, label, url
 
@@ -131,6 +144,7 @@ def parse_notebook(notebook_file):
         elif cell_type == 'listing':
             processed_text += listing(label, caption, text)
         elif cell_type == 'notebook':
+            print(url)
             processed_text += parse_notebook(url)
         elif cell_type == 'paragraph':
             processed_text += parse_markdown(text)
