@@ -6,9 +6,9 @@ import re
 import requests
 import xml.etree.ElementTree as ET
 
-from lib.cells import (bold, code, enumerate_list, footnotes,
+from lib.cells import (code, enumerate_list, footnotes,
                        header, image, inline_code, itemize,
-                       italics, listing, math, pound_symbol)
+                       italics, listing, math, pandoc, pound_symbol)
 LINE_BREAK = '\n'
 
 def get_cells(notebook_file):
@@ -119,13 +119,14 @@ def parse_book_data(title, author):
 
 def parse_markdown(markdown_cell_text):
     markdown_cell_text = footnotes(markdown_cell_text)
-    markdown_cell_text = inline_code(markdown_cell_text)
-    markdown_cell_text = bold(markdown_cell_text)
-    markdown_cell_text = italics(markdown_cell_text)
-    markdown_cell_text = pound_symbol(markdown_cell_text)
-    markdown_cell_text = itemize(markdown_cell_text)
-    markdown_cell_text = enumerate_list(markdown_cell_text)
-    markdown_cell_text = math(markdown_cell_text)
+    markdown_cell_text = pandoc(markdown_cell_text)
+    # markdown_cell_text = inline_code(markdown_cell_text)
+    # markdown_cell_text = bold(markdown_cell_text)
+    # markdown_cell_text = italics(markdown_cell_text)
+    # markdown_cell_text = pound_symbol(markdown_cell_text)
+    # markdown_cell_text = itemize(markdown_cell_text)
+    # markdown_cell_text = enumerate_list(markdown_cell_text)
+    # markdown_cell_text = math(markdown_cell_text)
     return "\paragraph{}\n" + markdown_cell_text
 
 def parse_notebook(notebook_file):

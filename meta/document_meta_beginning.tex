@@ -6,7 +6,8 @@
 \usepackage{amssymb}
 \usepackage{hyperref}
 \usepackage{float}
-
+\usepackage{longtable}
+\usepackage{textcomp}
 \hypersetup{
     colorlinks,
     citecolor=black,
@@ -17,18 +18,21 @@
 \usepackage{listings}
 \lstdefinestyle{mystyle}{
     basicstyle=\ttfamily\footnotesize,
-    breakatwhitespace=true,
+    breakatwhitespace=false,
     breaklines=true,
     keepspaces=true,
     showspaces=false,
     showstringspaces=false,
     showtabs=false,
     tabsize=4,
-    % upquote=true, need to get this working
+    upquote=true,
     frame=single,
     aboveskip=2em,
     postbreak=\space\space\space\space\space\space
 }\lstset{style=mystyle}
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
 \setcounter{tocdepth}{1}
 

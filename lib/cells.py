@@ -1,11 +1,9 @@
+from subprocess import call
+from os import remove
 import re
 import base64
 
 LINE_BREAK = "\n"
-
-def bold(markdown_cell_text):
-    regex = re.compile(r"\*\*(.+?)\*\*")
-    return regex.sub("\\\\textbf{\\1}", markdown_cell_text)
 
 def code(markdown_cell_text, outputs, execution_count):
 
@@ -23,8 +21,7 @@ def code(markdown_cell_text, outputs, execution_count):
              .replace('\\','')
              .lower())
 
-    caption = inline_code(caption)
-    caption = pound_symbol(caption)
+    caption = pandoc(caption)
 
     if type(outputs) == tuple:
         if outputs[0] == 'img':
@@ -110,41 +107,52 @@ def footnotes(markdown_cell_text):
         markdown_cell_text = regex.sub("", markdown_cell_text)
         # markdown_cell_text = markdown_cell_text.replace("_", "\\_")
 
+    # markdown_cell_text = pound_symbol(markdown_cell_text)
     return markdown_cell_text
 
 def header(cell_type, markdown_cell_text):
-
-    title = footnotes(markdown_cell_text)
-    title = re.sub(r"#.+? ", "", title)
+    title = re.sub(r"#.+? ", "", markdown_cell_text)
+    label = re.sub(r"#.+? ", "", markdown_cell_text)
+    title = footnotes(title)
     title = inline_code(title)
-    label = (title
+    label = (label
              .replace('`','')
              .replace('$', '')
              .replace('%', '')
              .replace(',', '')
              .replace('?', '')
-             .replace(' ','_')
+             .replace('_','')
+             .replace(' ','')
              .replace('\\','')
              .lower())
-    title = pound_symbol(title)
+    # title = pound_symbol(title)
 
     if cell_type == 'chapter':
-        processed_text = f"\chapter{{{title}}}\label{{ch:{label}}}"
+        processed_text  = "\chapter{"
+        processed_text += title
+        processed_text += "}\label{"
+        processed_text += "ch:" + label + "}"
     elif cell_type == 'section':
-        processed_text = f"\section{{{title}}}\label{{sec:{label}}}"
+        processed_text  = "\section{"
+        processed_text += title
+        processed_text += "}\label{"
+        processed_text += "sec:" + label + "}"
     elif cell_type == 'subsection':
-        processed_text = f"\subsection*{{{title}}}\label{{ssec:{label}}}"
+        processed_text  = "\subsection{"
+        processed_text += title
+        processed_text += "}\label{"
+        processed_text += "ssec:" + label + "}"
     else:
-        processed_text = f"\subsubsection*{{{title}}}\label{{sssec:{label}}}"
+        processed_text = "\subsubsection{"
+        processed_text += title
+        processed_text += "}\label{"
+        processed_text += "ssec:" + label + "}"
 
     return processed_text
 
 def image(url, caption):
     if caption:
-        caption = inline_code(caption)
-        caption = bold(caption)
-        caption = italics(caption)
-        caption = pound_symbol(caption)
+        caption = pandoc(caption)
     text = "\\begin{figure}"
     text += f"[H]\\includegraphics[width=\\linewidth]{{{url}}}"
     text += f"\\caption{{{caption}}}\label{{fig:{url}}}"
@@ -175,20 +183,13 @@ def itemize(markdown_cell_text):
     return markdown_cell_text
 
 def inline_code(markdown_cell_text):
-    # markdown_cell_text = markdown_cell_text.replace('%', "\\%")
-
-    regex = re.compile(r"`(.+?)`")
-    match = regex.search(markdown_cell_text)
-    if match:
-        markdown_cell_text = regex.sub("\\\\texttt{\\1}", markdown_cell_text)
-    return markdown_cell_text
+    return pandoc(markdown_cell_text)
 
 def listing(label, caption, markdown_cell_text):
-    caption = inline_code(caption)
-    caption = pound_symbol(caption)
+    caption = pandoc(caption)
 
-    markdown_cell_text = re.sub(r"<include.+\n","",markdown_cell_text)
-    markdown_cell_text = re.sub(r"###### .+\n","",markdown_cell_text)
+    markdown_cell_text = re.sub(r"<include.+\n", "", markdown_cell_text)
+    markdown_cell_text = re.sub(r"###### .+\n", "", markdown_cell_text)
     regex = re.compile(r"```\n(.+)```", re.S)
     code = regex.search(markdown_cell_text)
     if code:
@@ -211,6 +212,20 @@ def math(markdown_cell_text):
         markdown_cell_text = (markdown_cell_text
                               .replace(match, match.replace('\\_','_')))
     return markdown_cell_text
+
+def pandoc(markdown_cell_text):
+    with open('tmp.txt', 'w') as f:
+        f.write(markdown_cell_text)
+
+    call(['pandoc', 'tmp.txt', '-o', 'tmp.tex'])
+
+    with open('tmp.tex', 'r') as f:
+        tex = ''.join(f.readlines())
+
+    remove('tmp.txt')
+    remove('tmp.tex')
+
+    return tex
 
 def pound_symbol(markdown_cell_text):
     return (markdown_cell_text
