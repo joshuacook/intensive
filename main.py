@@ -20,7 +20,7 @@ with open('meta/document_meta_beginning.tex', 'r') as f:
 with open('meta/document_meta_end.tex', 'r') as f:
     meta_end = ''.join(f.readlines()    )
 
-STARTING_NOTEBOOK = 'contents.ipynb'
+STARTING_NOTEBOOK = 'contents-dev.ipynb'
 cells = get_cells(STARTING_NOTEBOOK)
 title_cell_text = [cell_text for cell_text in cells.source if get_cell_type(cell_text) == 'title'][0]
 
